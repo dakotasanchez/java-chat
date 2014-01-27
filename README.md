@@ -20,9 +20,11 @@ Build Server
 ### Run with
 
     java Server
-or
-    `java cvfe Server.jar Server *.class`
-    `java -jar Server.jar`
+
+### or
+    
+    java cvfe Server.jar Server *.class
+    java -jar Server.jar
   
 Build Client
 ============
@@ -33,6 +35,8 @@ Build Client
 ### Run with
 
     java Client
-or
-    `java cvfe Client.jar Client *.class resources/`
-    `java -jar Client.jar`
+
+### or
+   
+    java cvfe Client.jar Client *.class resources/
+    java -jar Client.jar
