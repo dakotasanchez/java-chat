@@ -21,8 +21,8 @@ Build Server
 
     java Server
 or
-    java cvfe Server.jar Server *.class
-    java -jar Server.jar
+    `java cvfe Server.jar Server *.class`
+    `java -jar Server.jar`
   
 Build Client
 ============
@@ -34,5 +34,5 @@ Build Client
 
     java Client
 or
-    java cvfe Client.jar Client *.class resources/
-    java -jar Client.jar
+    `java cvfe Client.jar Client *.class resources/`
+    `java -jar Client.jar`
