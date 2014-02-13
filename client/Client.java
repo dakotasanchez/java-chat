@@ -28,7 +28,6 @@ public class Client implements ActionListener, WindowListener {
 	
 	private String name, file, date;
 	private boolean connected, kicked, canada, playAudio;
-	private int firstSend;
 	
 	private JFrame frame;
 	private JPanel bottomPanel, topPanel;
@@ -45,7 +44,6 @@ public class Client implements ActionListener, WindowListener {
 	
 	public Client() throws IOException {
 		
-		firstSend = 0;
 		connected = false;
 		kicked = false;
 		canada = false;
@@ -67,7 +65,7 @@ public class Client implements ActionListener, WindowListener {
 		setComponents();
 		frame.setVisible(true);
 		
-		connect("Enter server address: ");
+		connect("Please enter a username:");
 	}
 	
 	//Set user interface components
@@ -143,10 +141,11 @@ public class Client implements ActionListener, WindowListener {
 			}
 		});
 		
-		label = new JLabel("Please enter a username: ");
+		label = new JLabel("                         ");
 		label.setForeground(new Color(255, 255, 255));
 
-		textField = new JTextField(33);
+		textField = new JTextField(40);
+		textField.setVisible(false);
 		textField.addActionListener(this);
 		
 		//Set main chat area
@@ -242,35 +241,16 @@ public class Client implements ActionListener, WindowListener {
 		
 		if(textField.getText().length() > 0 && !kicked) {
 
-			//For setting username on first send
-			if(firstSend == 0) {
-				name = textField.getText();
-				if(!name.startsWith(" ")) {
-					out.println(name);
-				
-					label.setText(" Chat as you please: ");
-					textField.setColumns(32);
-					label.repaint();
-					textField.repaint();
-				
-					chatArea.append("Welcome " + name + "!\n");
-					chatArea.append("You have connected to the chatroom.\n\n");
-					out.println("FIRSTCONNECTSERVER: " + name + " has connected to the chatroom.\n");
-					firstSend++;
-				}
-			} else {
+			String s = textField.getText();
+			out.println(s);
 
-				String s = textField.getText();
-				out.println(s);
-
-				//Add "eh" if "Canadian" button selected
-				if(canada) {	
-					s = canadianString(s);
-				}
-					
-				//Print own message on scrollpane
-				chatArea.append(getDate() + " " + name + "(Me): " + s + "\n");
+			//Add "eh" if "Canadian" button selected
+			if(canada) {	
+				s = canadianString(s);
 			}
+					
+			//Print own message on scrollpane
+			chatArea.append(getDate() + " " + name + "(Me): " + s + "\n");
 		}
 		
 		textField.setText("");
@@ -346,31 +326,39 @@ public class Client implements ActionListener, WindowListener {
 		
 		try {	
 
-			String s = (String)JOptionPane.showInputDialog(
+			name = (String)JOptionPane.showInputDialog(
 					null,
+					"",
 					message,
-					"Server IP",
 					JOptionPane.PLAIN_MESSAGE,
 					null,
 					null,
 					"");
 			
-			if(!(s == null)) {
+			if(name == null) System.exit(0);
 				
-				if(s.equalsIgnoreCase("local"))
-					socket = new Socket(InetAddress.getLocalHost(), 55555);
-				else
-					socket = new Socket(s, 55555);
-				
-				connected = true;
-				
-				in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-				out = new PrintWriter(socket.getOutputStream(), true);
+			socket = new Socket(InetAddress.getLocalHost(), 55555);
+			
+			connected = true;
+			
+			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			out = new PrintWriter(socket.getOutputStream(), true);
 
-				t = new Thread(new Input());
-				t.setDaemon(true);
-				t.start();
-			}
+			out.println(name);
+				
+			label.setText(" Chat as you please: ");
+			label.repaint();
+			textField.setVisible(true);
+			textField.repaint();
+				
+			chatArea.append("Welcome " + name + "!\n");
+			chatArea.append("You have connected to the chatroom.\n\n");
+			out.println("FIRSTCONNECTSERVER: " + name + " has connected to the chatroom.\n");
+
+
+			t = new Thread(new Input());
+			t.setDaemon(true);
+			t.start();
 
 			textField.requestFocus();
 
@@ -380,7 +368,7 @@ public class Client implements ActionListener, WindowListener {
 				if(in != null) {in.close();}
 				if(socket != null) {socket.close();}
 
-				connect("INVALID SERVER ADDRESS");
+				connect("Server is experiencing issues :(");
 			} catch (IOException ex) {
 				ex.printStackTrace();
 			}
