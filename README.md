@@ -1,4 +1,4 @@
-java-server-client-chat
+java-chat
 =======================
 
 Simple Server that connects multiple clients in a chatroom
@@ -7,7 +7,7 @@ Setup
 =====
 
 - Have java installed
-- Have java javac and jar in your PATH
+- Have java and javac in your PATH
 
 Jars are in jars directory but if needed:
 
