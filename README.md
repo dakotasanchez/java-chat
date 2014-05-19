@@ -1,42 +1,19 @@
 lan-chat
 =======================
 
-Simple Server that connects multiple clients in a chatroom
+Simple Server that connects multiple clients in a lan chatroom
 
 Setup
 =====
 
-- Have java installed
-- Have java and javac in your PATH
+- Have java, javac, and ant installed and in your PATH
 
-Jars are in jars directory but if needed:
-
-Build Server
+Build and clean
 ============
-
-    cd server
-    javac Server.java
-
-### Run with
-
-    java Server
-
-### or
-    
-    java cvfe Server.jar Server *.class
-    java -jar Server.jar
   
-Build Client
-============
-
-    cd client
-    java Client.java
+    ant dist
+    ant clean
   
-### Run with
+### Run
 
-    java Client
-
-### or
-   
-    java cvfe Client.jar Client *.class resources/
-    java -jar Client.jar
+Executable jars can be found in dist/
