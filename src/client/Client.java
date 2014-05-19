@@ -65,7 +65,7 @@ public class Client implements ActionListener, WindowListener {
 		setComponents();
 		frame.setVisible(true);
 
-		connect("Please enter a username:");
+		connect("Please enter an ip address:");
 	}
 
 	//Set user interface components
@@ -329,7 +329,7 @@ public class Client implements ActionListener, WindowListener {
 			name = (String)JOptionPane.showInputDialog(
 					null,
 					"",
-					message,
+					"Please enter a username:",
 					JOptionPane.PLAIN_MESSAGE,
 					null,
 					null,
@@ -337,7 +337,21 @@ public class Client implements ActionListener, WindowListener {
 
 			if(name == null) System.exit(0);
 
-			socket = new Socket(InetAddress.getLocalHost(), 55555);
+            String address = (String)JOptionPane.showInputDialog(
+                    null,
+                    "",
+                    message,
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    null,
+                    "");
+
+            if(address == null) System.exit(0);
+            
+            if(address.equalsIgnoreCase("local"))
+                socket = new Socket(InetAddress.getLocalHost(), 55555);
+            else
+                socket = new Socket(InetAddress.getByName(address), 55555);
 
 			connected = true;
 
@@ -362,13 +376,13 @@ public class Client implements ActionListener, WindowListener {
 
 			textField.requestFocus();
 
-		} catch (IOException e) {
+		} catch (Exception e) {
 			try {
 				if(out != null) {out.close();}
 				if(in != null) {in.close();}
 				if(socket != null) {socket.close();}
 
-				connect("Server is experiencing issues :(");
+				connect("Invalid address");
 			} catch (IOException ex) {
 				ex.printStackTrace();
 			}
