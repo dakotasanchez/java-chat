@@ -1,4 +1,4 @@
-java-chat
+lan-chat
 =======================
 
 Simple Server that connects multiple clients in a chatroom
