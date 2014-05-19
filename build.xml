@@ -33,15 +33,15 @@
     <jar jarfile="${dist}/Server-${DSTAMP}.jar" basedir="${build}/server">
       <manifest>
         <attribute name="Server-${DSTAMP}" value="main"/>
-        <attribute name="Main-Class" value="Main"/>
+        <attribute name="Main-Class" value="Server"/>
       </manifest>
     </jar>
     <jar jarfile="${dist}/Client-${DSTAMP}.jar" basedir="${build}/client">
       <manifest>
         <attribute name="Client-${DSTAMP}" value="main"/>
-        <attribute name="Main-Class" value="Main"/>
+        <attribute name="Main-Class" value="Client"/>
       </manifest>
-      <fileset dir="${res}"/>
+      <zipfileset dir="${res}" prefix="res/"/>
     </jar>
     
   </target>
