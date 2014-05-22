@@ -41,10 +41,19 @@ public class Server {
 			return;
 		}
 
-		//Notify which address to connect to
-		System.out.println("Socket " + serverSocket + " created.\nConnect to: " + 
-				InetAddress.getLocalHost().getHostAddress());
-		
+		System.out.print("Socket " + serverSocket + " created.\nConnect to: ");
+
+		Enumeration e = NetworkInterface.getNetworkInterfaces();
+		while(e.hasMoreElements()) {
+			Enumeration ee = ((NetworkInterface)e.nextElement()).getInetAddresses();
+			while(ee.hasMoreElements()) {
+				InetAddress i = (InetAddress)ee.nextElement();
+				if(i.isSiteLocalAddress()) {
+					System.out.println(i.getHostAddress());
+				}
+			}
+		}
+
 		users = new ArrayList<User>();
 		
 		//Create a new Connect Object
