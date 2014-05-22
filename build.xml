@@ -20,8 +20,10 @@
   <target name="compile" depends="init"
         description="compile the source " >
     <!-- Compile the java code from ${src} into ${build} -->
-    <javac includeantruntime="false" srcdir="${src}/server" destdir="${build}/server"/>
-    <javac includeantruntime="false" srcdir="${src}/client" destdir="${build}/client"/>
+    <javac includeantruntime="false" srcdir="${src}/server" 
+        destdir="${build}/server" source="1.7" target="1.7"/>
+    <javac includeantruntime="false" srcdir="${src}/client" 
+        destdir="${build}/client" source="1.7" target="1.7"/>
   </target>
 
   <target name="dist" depends="compile"
