@@ -18,6 +18,8 @@ import java.util.List;
 
 //This handles all of the Clients in the Server.
 public class Server {
+
+	private final int PORT = 1201;
 	
 	private ServerSocket serverSocket;
 	private Socket socket;
@@ -29,17 +31,13 @@ public class Server {
 
 	private String machineAddress;
 
-	public static void main(String[] args) throws UnknownHostException, IOException {	
-		new Server();
-	}
-
 	//Creates a new Server object
 	public Server() throws UnknownHostException, IOException {
 		
 		//Attempt to create server socket
 		try {
 			
-			serverSocket = new ServerSocket(55555);
+			serverSocket = new ServerSocket(PORT);
 
 		} catch(IOException e1){
 			System.out.println("Could not open server socket.");

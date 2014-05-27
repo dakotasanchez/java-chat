@@ -35,6 +35,8 @@ import javax.swing.text.DefaultCaret;
 @SuppressWarnings("restriction")
 public class Client implements ActionListener, WindowListener {
 
+	private final int PORT = 1201;
+
 	private Socket socket;
 	private BufferedReader in;
 	private PrintWriter out;
@@ -51,11 +53,6 @@ public class Client implements ActionListener, WindowListener {
 	private JButton canadaButton, muteButton, alertButton;
 	private JLabel label;
 	private DefaultCaret caret;
-
-	public static void main(String[] args) throws IOException {
-
-		new Client();
-	}
 
 	public Client() throws IOException {
 
@@ -287,9 +284,9 @@ public class Client implements ActionListener, WindowListener {
             if(address == null) System.exit(0);
             
             if(address.equalsIgnoreCase("local"))
-                socket = new Socket(InetAddress.getLocalHost(), 55555);
+                socket = new Socket(InetAddress.getLocalHost(), PORT);
             else
-                socket = new Socket(InetAddress.getByName(address), 55555);
+                socket = new Socket(InetAddress.getByName(address), PORT);
 
 			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			out = new PrintWriter(socket.getOutputStream(), true);
