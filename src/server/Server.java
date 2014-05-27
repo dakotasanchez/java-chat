@@ -3,27 +3,34 @@
  * Chatroom Socket Server
  */
 
-import java.net.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Enumeration;
 
 //This handles all of the Clients in the Server.
 public class Server {
 	
 	private ServerSocket serverSocket;
 	private Socket socket;
+
 	private ArrayList<User> users;
-	private Thread thread;
 	private PrintWriter logWriter;
 	private DateFormat dateFormat;
 	private Date date;
 
-	public static void main(String[] args) throws UnknownHostException, IOException {
-		
+	private String machineAddress;
+
+	public static void main(String[] args) throws UnknownHostException, IOException {	
 		new Server();
 	}
 
@@ -35,9 +42,9 @@ public class Server {
 			
 			serverSocket = new ServerSocket(55555);
 
-		} catch(IOException e){
+		} catch(IOException e1){
 			System.out.println("Could not open server socket.");
-			e.printStackTrace();
+			e1.printStackTrace();
 			return;
 		}
 
@@ -49,27 +56,42 @@ public class Server {
 			while(ee.hasMoreElements()) {
 				InetAddress i = (InetAddress)ee.nextElement();
 				if(i.isSiteLocalAddress()) {
-					System.out.println(i.getHostAddress());
+					machineAddress = i.getHostAddress();
+					System.out.println(machineAddress);
 				}
 			}
 		}
 
 		users = new ArrayList<User>();
 		
-		//Create a new Connect Object
-		thread = new Thread(new Connect());
-		thread.start();
+		System.out.println("Server has been started.");
+
+		//Start accepting clients
+		while(true) {
+								
+			try {
+				socket = serverSocket.accept();
+				if(socket != null) {
+					System.out.println("Client " + socket + " has connected.");
+					new Connection(socket);
+				}
+			}catch(IOException e2) {
+				e2.printStackTrace();
+			}			
+		}
 	}
 	
 	//The data stream for each client
-	private class Outport extends Thread {
+	private class Connection extends Thread {
 		
 		private Socket socket;
 		private BufferedReader in;
 		private PrintWriter out;
 		private User thisUser;
+		private boolean exitThread;
 		
-		public Outport(Socket newSocket) {
+		public Connection(Socket newSocket) {
+			exitThread = false;
 			socket = newSocket;
 			start();
 		}
@@ -87,83 +109,63 @@ public class Server {
 					users.add(thisUser);
 				}
 				
-				while(true) {					
-					
+				while(!exitThread) {					
+					//Message from client
 					String str = in.readLine();	
-						
-					if(str != null) {
-						
-						//Kick
-						if(str.equalsIgnoreCase("CloseStreams")) {
-							System.out.println("Client " + socket + " has disconnected.");
-							users.remove(users.indexOf(thisUser));
-
-							for(User u : users) {
-								if(u != thisUser)
-									u.writer().println("SERVER: " + thisUser.name() +
-											" has been kicked from the server, laugh at their misfortune.");
-							}
-							in.close();
-							out.close();
-							socket.close();
-							thisUser.closeWriter();
-							break;
-						}
-						
-						if(str.length() > 0) {
-							
-							//Send data to every client
-							for(User u : users) {
-								
-								if(u != thisUser) {
-
-									if(str.equals("EXITINGCHATROOM"))
-										u.writer().println("SERVER: " + thisUser.name() + " has disconnected");							
-									else if(str.contains("FIRSTCONNECT"))
-										u.writer().println(str.substring(12));
-									else
-										u.writer().println(thisUser.name() + ": " + str);								
-								}
-							}	
-
-							if(str.equals("EXITINGCHATROOM")) {
-								System.out.println("Client " + socket + " has disconnected.");
-								users.remove(users.indexOf(thisUser));
-								break;							
-							}					
-						}
-					}					
+					sendMessage(str);					
 				}
-
 			}catch(IOException e) {
 				System.out.println("Client " + socket + " has disconnected.");
 				users.remove(users.indexOf(thisUser));
 			}
 		}
-	}
-	
-	//Starts the client accepting process
-	private class Connect extends Thread {
-		
-		public void run() {
-			
-			System.out.println("Server has been started.");
 
-			while(true) {
-								
-				try {
-					socket = serverSocket.accept();
-					if(socket != null) {
-						System.out.println("Client " + socket + " has connected.");
-						new Outport(socket);
+		private void sendMessage(String str) throws IOException {
+			if(str != null) {
+						
+				//Kick
+				if(str.equalsIgnoreCase("CloseStreams")) {
+					System.out.println("Client " + socket + " has disconnected.");
+					users.remove(users.indexOf(thisUser));
+
+					for(User u : users) {
+						if(u != thisUser)
+							u.writer().println("SERVER: " + thisUser.name() +
+									" has been kicked from the server, laugh at their misfortune.");
 					}
-				}catch(IOException e) {
-					e.printStackTrace();
-				}			
+					in.close();
+					out.close();
+					socket.close();
+					thisUser.closeWriter();
+					exitThread = true;
+				}
+						
+				if(str.length() > 0) {
+							
+					//Send data to every client
+					for(User u : users) {
+								
+						if(u != thisUser) {
+
+							if(str.equals("EXITINGCHATROOM"))
+								u.writer().println("SERVER: " + thisUser.name() + " has disconnected");							
+							else if(str.contains("FIRSTCONNECT"))
+								u.writer().println(str.substring(12));
+							else
+								u.writer().println(thisUser.name() + ": " + str);								
+						}
+					}	
+
+					if(str.equals("EXITINGCHATROOM")) {
+						System.out.println("Client " + socket + " has disconnected.");
+						users.remove(users.indexOf(thisUser));
+						exitThread = true;						
+					}					
+				}
 			}
 		}
 	}
-	
+
 	//Represents a client
 	private class User {
 		
