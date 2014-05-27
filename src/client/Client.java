@@ -2,20 +2,35 @@
  * GUI Chatroom Client
  */
 
-import java.net.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.io.*;
 
-import sun.audio.*;
-
-import javax.swing.*;
-import javax.swing.UIManager.*;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.text.DefaultCaret;
-
-import java.awt.*;
-import java.awt.event.*;
 
 @SuppressWarnings("restriction")
 public class Client implements ActionListener, WindowListener {
@@ -27,7 +42,7 @@ public class Client implements ActionListener, WindowListener {
 	private Thread t;
 
 	private String name, file, date;
-	private boolean connected, canada, playAudio;
+	private boolean canada, playAudio;
 
 	private JFrame frame;
 	private JPanel bottomPanel, topPanel;
@@ -44,7 +59,6 @@ public class Client implements ActionListener, WindowListener {
 
 	public Client() throws IOException {
 
-		connected = false;
 		canada = false;
 		playAudio = true;
 		file = "alert.wav";
@@ -125,17 +139,17 @@ public class Client implements ActionListener, WindowListener {
 					alertButton.setText("Alert Sound: 2");
 					file = "alert2.wav";
 					if(playAudio)
-						new AudioClip().start();
+						new AudioClip(file).start();
 				} else if(alertButton.getText().endsWith("2")) {
 					alertButton.setText("Alert Sound: 3");
 					file = "alert3.wav";
 					if(playAudio)
-						new AudioClip().start();
+						new AudioClip(file).start();
 				} else {
 					alertButton.setText("Alert Sound: 1");
 					file = "alert.wav";
 					if(playAudio)
-						new AudioClip().start();
+						new AudioClip(file).start();
 				}
 			}
 		});
@@ -243,76 +257,21 @@ public class Client implements ActionListener, WindowListener {
 		textField.setText("");
 	}
 
-	//Handles all incoming data from server.
-	private class Input extends Thread {
-
-		public void run() {
-
-			while(true) {
-				try {
-					String s = in.readLine();
-
-					//Add "eh" to incoming messages
-					if(canada) {
-						s = canadianString(s);
-					}
-
-					if(playAudio) {
-						new AudioClip().start();
-					}
-
-					chatArea.append(getDate() + " " + s + "\n");
-					chatArea.setCaretPosition(chatArea.getDocument().getLength());
-
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
-
-	//Handles alert sounds
-	private class AudioClip extends Thread implements ActionListener {
-
-		private AudioStream audioStream;
-
-		public void run() {
-
-			//Open audio stream
-			try {
-				audioStream = new AudioStream(this.getClass().getResourceAsStream("/res/" + file));
-				AudioPlayer.player.start(audioStream);
-
-				Timer time = new Timer(500, this);
-				time.setRepeats(false);
-				time.start();
-
-			} catch(FileNotFoundException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-
-		public void actionPerformed(ActionEvent event) {
-
-			AudioPlayer.player.stop(audioStream);
-		}
-	}
-
 	//Attempt to establish connection to server on entered address
 	public void connect(String message) {
 
 		try {
 
-			name = (String)JOptionPane.showInputDialog(
-					null,
-					"",
-					"Please enter a username:",
-					JOptionPane.PLAIN_MESSAGE,
-					null,
-					null,
-					"");
+			if(!message.startsWith("Invalid")) {
+				name = (String)JOptionPane.showInputDialog(
+						null,
+						"",
+						"Please enter a username:",
+						JOptionPane.PLAIN_MESSAGE,
+						null,
+						null,
+						"");
+			}
 
 			if(name == null) System.exit(0);
 
@@ -331,8 +290,6 @@ public class Client implements ActionListener, WindowListener {
                 socket = new Socket(InetAddress.getLocalHost(), 55555);
             else
                 socket = new Socket(InetAddress.getByName(address), 55555);
-
-			connected = true;
 
 			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			out = new PrintWriter(socket.getOutputStream(), true);
@@ -403,4 +360,31 @@ public class Client implements ActionListener, WindowListener {
 
 	public void windowOpened(WindowEvent arg0) {}
 
+		//Handles all incoming data from server.
+	private class Input extends Thread {
+
+		public void run() {
+
+			while(true) {
+				try {
+					String s = in.readLine();
+
+					//Add "eh" to incoming messages
+					if(canada) {
+						s = canadianString(s);
+					}
+
+					if(playAudio) {
+						new AudioClip(file).start();
+					}
+
+					chatArea.append(getDate() + " " + s + "\n");
+					chatArea.setCaretPosition(chatArea.getDocument().getLength());
+
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 }
