@@ -27,7 +27,7 @@ public class Client implements ActionListener, WindowListener {
 	private Thread t;
 
 	private String name, file, date;
-	private boolean connected, kicked, canada, playAudio;
+	private boolean connected, canada, playAudio;
 
 	private JFrame frame;
 	private JPanel bottomPanel, topPanel;
@@ -45,7 +45,6 @@ public class Client implements ActionListener, WindowListener {
 	public Client() throws IOException {
 
 		connected = false;
-		kicked = false;
 		canada = false;
 		playAudio = true;
 		file = "alert.wav";
@@ -224,22 +223,10 @@ public class Client implements ActionListener, WindowListener {
 		return date;
 	}
 
-	//Kick this user from the chatroom
-	public void kick() throws IOException{
-
-		out.println("CloseStreams");
-		out.close();
-		in.close();
-		socket.close();
-		chatArea.append("\nYou have been kicked by the Server.\n");
-		chatArea.setForeground(Color.RED);
-		kicked = true;
-	}
-
 	//Send data from text field when 'return' is pressed
 	public void actionPerformed(ActionEvent evt) {
 
-		if(textField.getText().length() > 0 && !kicked) {
+		if(textField.getText().length() > 0) {
 
 			String s = textField.getText();
 			out.println(s);
@@ -261,32 +248,24 @@ public class Client implements ActionListener, WindowListener {
 
 		public void run() {
 
-			while(!kicked) {
+			while(true) {
 				try {
 					String s = in.readLine();
 
-					//Check to see if Server is trying to remove user
-					if(!s.equals("AdminRemovalMessage")) {
-
-						//Add "eh" to incoming messages
-						if(canada) {
-							s = canadianString(s);
-						}
-
-						if(playAudio) {
-							new AudioClip().start();
-						}
-
-						chatArea.append(getDate() + " " + s + "\n");
-						chatArea.setCaretPosition(chatArea.getDocument().getLength());
-
-					} else {
-
-						kick();
+					//Add "eh" to incoming messages
+					if(canada) {
+						s = canadianString(s);
 					}
+
+					if(playAudio) {
+						new AudioClip().start();
+					}
+
+					chatArea.append(getDate() + " " + s + "\n");
+					chatArea.setCaretPosition(chatArea.getDocument().getLength());
+
 				} catch (IOException e) {
 					e.printStackTrace();
-					break;
 				}
 			}
 		}

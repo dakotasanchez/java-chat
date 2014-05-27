@@ -47,6 +47,7 @@ public class Server {
 			return;
 		}
 
+		System.out.println("Server has been started.");
 		System.out.print("Socket " + serverSocket + " created.\nConnect to: ");
 
 		Enumeration e = NetworkInterface.getNetworkInterfaces();
@@ -62,9 +63,8 @@ public class Server {
 		}
 
 		users = new ArrayList<User>();
+		// lock for users list
 		Object lock = new Object();
-		
-		System.out.println("Server has been started.");
 
 		//Start accepting clients
 		while(true) {				
