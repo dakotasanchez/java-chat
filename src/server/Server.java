@@ -3,9 +3,7 @@
  * Chatroom Socket Server
  */
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -16,6 +14,7 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.List;
 
 //This handles all of the Clients in the Server.
 public class Server {
@@ -23,7 +22,7 @@ public class Server {
 	private ServerSocket serverSocket;
 	private Socket socket;
 
-	private ArrayList<User> users;
+	private List<User> users;
 	private PrintWriter logWriter;
 	private DateFormat dateFormat;
 	private Date date;
@@ -63,130 +62,21 @@ public class Server {
 		}
 
 		users = new ArrayList<User>();
+		Object lock = new Object();
 		
 		System.out.println("Server has been started.");
 
 		//Start accepting clients
-		while(true) {
-								
+		while(true) {				
 			try {
 				socket = serverSocket.accept();
 				if(socket != null) {
 					System.out.println("Client " + socket + " has connected.");
-					new Connection(socket);
+					new Connection(socket, users, lock);
 				}
 			}catch(IOException e2) {
 				e2.printStackTrace();
 			}			
-		}
-	}
-	
-	//The data stream for each client
-	private class Connection extends Thread {
-		
-		private Socket socket;
-		private BufferedReader in;
-		private PrintWriter out;
-		private User thisUser;
-		private boolean exitThread;
-		
-		public Connection(Socket newSocket) {
-			exitThread = false;
-			socket = newSocket;
-			start();
-		}
-		
-		public void run() {
-			
-			try {
-				in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-				out = new PrintWriter(socket.getOutputStream(), true);
-				
-				String exit = in.readLine();
-				
-				if(!exit.equals("EXITINGCHATROOM")) {
-					thisUser = new User(exit, out);
-					users.add(thisUser);
-				}
-				
-				while(!exitThread) {					
-					//Message from client
-					String str = in.readLine();	
-					sendMessage(str);					
-				}
-			}catch(IOException e) {
-				System.out.println("Client " + socket + " has disconnected.");
-				users.remove(users.indexOf(thisUser));
-			}
-		}
-
-		private void sendMessage(String str) throws IOException {
-			if(str != null) {
-						
-				//Kick
-				if(str.equalsIgnoreCase("CloseStreams")) {
-					System.out.println("Client " + socket + " has disconnected.");
-					users.remove(users.indexOf(thisUser));
-
-					for(User u : users) {
-						if(u != thisUser)
-							u.writer().println("SERVER: " + thisUser.name() +
-									" has been kicked from the server, laugh at their misfortune.");
-					}
-					in.close();
-					out.close();
-					socket.close();
-					thisUser.closeWriter();
-					exitThread = true;
-				}
-						
-				if(str.length() > 0) {
-							
-					//Send data to every client
-					for(User u : users) {
-								
-						if(u != thisUser) {
-
-							if(str.equals("EXITINGCHATROOM"))
-								u.writer().println("SERVER: " + thisUser.name() + " has disconnected");							
-							else if(str.contains("FIRSTCONNECT"))
-								u.writer().println(str.substring(12));
-							else
-								u.writer().println(thisUser.name() + ": " + str);								
-						}
-					}	
-
-					if(str.equals("EXITINGCHATROOM")) {
-						System.out.println("Client " + socket + " has disconnected.");
-						users.remove(users.indexOf(thisUser));
-						exitThread = true;						
-					}					
-				}
-			}
-		}
-	}
-
-	//Represents a client
-	private class User {
-		
-		private String name;
-		private PrintWriter out;
-		
-		public User(String name, PrintWriter out) {
-			this.name = name;
-			this.out = out;
-		}
-		
-		public String name() {
-			return name;
-		}
-		
-		public PrintWriter writer() {
-			return out;
-		}
-
-		public void closeWriter() {
-			out.close();
 		}
 	}
 }
