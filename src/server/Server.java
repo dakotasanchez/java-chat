@@ -29,7 +29,7 @@ public class Server {
 	private DateFormat dateFormat;
 	private Date date;
 
-	private String machineAddress;
+	private InetAddress machineAddress;
 
 	//Creates a new Server object
 	public Server() throws UnknownHostException, IOException {
@@ -54,11 +54,14 @@ public class Server {
 			while(ee.hasMoreElements()) {
 				InetAddress i = (InetAddress)ee.nextElement();
 				if(i.isSiteLocalAddress()) {
-					machineAddress = i.getHostAddress();
-					System.out.println(machineAddress);
+					machineAddress = i;
+					System.out.println(i.getHostAddress());
 				}
 			}
 		}
+
+		// start broadcasting ip address in lan
+		new Broadcast(machineAddress);
 
 		users = new ArrayList<User>();
 		// lock for users list
