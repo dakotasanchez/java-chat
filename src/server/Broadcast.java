@@ -1,6 +1,7 @@
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 public class Broadcast extends Thread {
 
@@ -10,18 +11,27 @@ public class Broadcast extends Thread {
 	private DatagramSocket sock;
 
 	public Broadcast(InetAddress addr) {
-		broadcastAddr = addr;
+		// convert machine ip to broadcast ip
+		byte[] rawAddr = addr.getAddress();
+		rawAddr[3] = (byte)255;
+		try {
+			broadcastAddr = InetAddress.getByAddress(rawAddr);
+		} catch(UnknownHostException e) {
+			e.printStackTrace();
+		}
 		start();
 	}
 
 	public void run() {
 		try {
 			sock = new DatagramSocket(null);
-			
+
+			// empty data
 			byte[] buffer = new byte[64];
 
 			DatagramPacket pack = new DatagramPacket(buffer, buffer.length,
 					broadcastAddr, BROADCAST_PORT);
+
 			while(true) {
 				sock.send(pack);
 				System.out.println("sent packet");
