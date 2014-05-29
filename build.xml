@@ -21,9 +21,9 @@
         description="compile the source " >
     <!-- Compile the java code from ${src} into ${build} -->
     <javac includeantruntime="false" srcdir="${src}/server" 
-        destdir="${build}/server" source="1.7" target="1.7"/>
+        destdir="${build}/server" source="1.6" target="1.6"/>
     <javac includeantruntime="false" srcdir="${src}/client" 
-        destdir="${build}/client" source="1.7" target="1.7"/>
+        destdir="${build}/client" source="1.6" target="1.6"/>
   </target>
 
   <target name="dist" depends="compile"
