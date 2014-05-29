@@ -19,6 +19,7 @@ public class Broadcast extends Thread {
 		} catch(UnknownHostException e) {
 			e.printStackTrace();
 		}
+		System.out.println("Broadcasting to " + broadcastAddr.getHostAddress());
 		start();
 	}
 

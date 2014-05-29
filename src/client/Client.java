@@ -340,8 +340,8 @@ public class Client implements ActionListener, WindowListener {
 				if(out != null) {out.close();}
 				if(in != null) {in.close();}
 				if(socket != null) {socket.close();}
-
-				connect("Invalid address");
+				System.exit(0);
+				//connect("Invalid address");
 			} catch (IOException ex) {
 				ex.printStackTrace();
 			}
