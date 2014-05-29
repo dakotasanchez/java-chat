@@ -16,6 +16,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.DatagramSocket;
+import java.net.DatagramPacket;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -36,12 +38,16 @@ import javax.swing.text.DefaultCaret;
 public class Client implements ActionListener, WindowListener {
 
 	private final int PORT = 1201;
+	private final int BROADCAST_PORT = 1202;
 
 	private Socket socket;
 	private BufferedReader in;
 	private PrintWriter out;
 	private DateFormat dateFormat;
 	private Thread t;
+
+	private DatagramSocket sock;
+	private DatagramPacket pack;
 
 	private String name, file, date;
 	private boolean canada, playAudio;
@@ -272,6 +278,23 @@ public class Client implements ActionListener, WindowListener {
 
 			if(name == null) System.exit(0);
 
+			chatArea.setText("Waiting for ip.....");
+			try {
+				// recieve server packet with host address
+				sock = new DatagramSocket(BROADCAST_PORT);
+				pack = new DatagramPacket(new byte[64], 64);
+				sock.receive(pack);
+			} catch(Exception e) {
+				chatArea.setText("");
+				chatArea.setText("Sorry could not connect...");
+			} finally {
+				sock.close();
+			}
+
+			chatArea.setText("");
+			chatArea.setText("Connecting to " + pack.getAddress().getHostAddress());
+			
+			/* Manual address input
             String address = (String)JOptionPane.showInputDialog(
                     null,
                     "",
@@ -282,11 +305,13 @@ public class Client implements ActionListener, WindowListener {
                     "");
 
             if(address == null) System.exit(0);
-            
+			
+
             if(address.equalsIgnoreCase("local"))
                 socket = new Socket(InetAddress.getLocalHost(), PORT);
             else
-                socket = new Socket(InetAddress.getByName(address), PORT);
+            */
+            socket = new Socket(pack.getAddress(), PORT);
 
 			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			out = new PrintWriter(socket.getOutputStream(), true);
@@ -298,6 +323,7 @@ public class Client implements ActionListener, WindowListener {
 			textField.setVisible(true);
 			textField.repaint();
 
+			chatArea.setText("");
 			chatArea.append("Welcome " + name + "!\n");
 			chatArea.append("You have connected to the chatroom.\n\n");
 			out.println("FIRSTCONNECTSERVER: " + name + " has connected to the chatroom.\n");

@@ -34,7 +34,6 @@ public class Broadcast extends Thread {
 
 			while(true) {
 				sock.send(pack);
-				System.out.println("sent packet");
 				Thread.sleep(1500);
 			}
 		} catch(Exception e) {
