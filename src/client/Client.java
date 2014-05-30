@@ -81,7 +81,7 @@ public class Client implements ActionListener, WindowListener {
 		setComponents();
 		frame.setVisible(true);
 
-		connect("Please enter an ip address:");
+		connect(null);
 	}
 
 	//Set user interface components
@@ -265,7 +265,7 @@ public class Client implements ActionListener, WindowListener {
 
 		try {
 
-			if(!message.startsWith("Invalid")) {
+			if(message == null) {
 				name = (String)JOptionPane.showInputDialog(
 						null,
 						"",
@@ -278,24 +278,26 @@ public class Client implements ActionListener, WindowListener {
 
 			if(name == null) System.exit(0);
 
-			chatArea.setText("Waiting for ip.....");
-			try {
-				// recieve server packet with host address
-				sock = new DatagramSocket(BROADCAST_PORT);
-				pack = new DatagramPacket(new byte[64], 64);
-				sock.receive(pack);
-			} catch(Exception e) {
-				chatArea.setText("");
-				chatArea.setText("Sorry could not connect...");
-			} finally {
-				sock.close();
-			}
+			if(message == null) {
+				chatArea.setText("Waiting for ip.....");
+				try {
+					// recieve server packet with host address
+					sock = new DatagramSocket(BROADCAST_PORT);
+					pack = new DatagramPacket(new byte[64], 64);
+					sock.setSoTimeout(5000);
+					sock.receive(pack);
+				} catch(Exception e) {
+					chatArea.setText("");
+					chatArea.setText("Sorry could not connect...");
+				} finally {
+					sock.close();
+				}
 
-			chatArea.setText("");
-			chatArea.setText("Connecting to " + pack.getAddress().getHostAddress());
-			
-			/* Manual address input
-            String address = (String)JOptionPane.showInputDialog(
+				chatArea.setText("");
+				chatArea.setText("Connecting to " + pack.getAddress().getHostAddress());
+				socket = new Socket(pack.getAddress(), PORT);
+			} else {
+				String address = (String)JOptionPane.showInputDialog(
                     null,
                     "",
                     message,
@@ -304,14 +306,13 @@ public class Client implements ActionListener, WindowListener {
                     null,
                     "");
 
-            if(address == null) System.exit(0);
+            	if(address == null) System.exit(0);
 			
-
-            if(address.equalsIgnoreCase("local"))
-                socket = new Socket(InetAddress.getLocalHost(), PORT);
-            else
-            */
-            socket = new Socket(pack.getAddress(), PORT);
+            	if(address.equalsIgnoreCase("local"))
+            	    socket = new Socket(InetAddress.getLocalHost(), PORT);
+            	else
+            		socket = new Socket(InetAddress.getByName(address), PORT);
+			}
 
 			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			out = new PrintWriter(socket.getOutputStream(), true);
@@ -340,8 +341,8 @@ public class Client implements ActionListener, WindowListener {
 				if(out != null) {out.close();}
 				if(in != null) {in.close();}
 				if(socket != null) {socket.close();}
-				System.exit(0);
-				//connect("Invalid address");
+
+				connect("Enter a valid local ip address:");
 			} catch (IOException ex) {
 				ex.printStackTrace();
 			}
