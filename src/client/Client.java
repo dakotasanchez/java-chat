@@ -15,12 +15,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Enumeration;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -40,6 +43,7 @@ public class Client implements ActionListener, WindowListener {
 	private final int PORT = 1201;
 	private final int BROADCAST_PORT = 1202;
 
+	private byte[] myAddress;
 	private Socket socket;
 	private BufferedReader in;
 	private PrintWriter out;
@@ -80,6 +84,16 @@ public class Client implements ActionListener, WindowListener {
 		setLAF();
 		setComponents();
 		frame.setVisible(true);
+
+		Enumeration e = NetworkInterface.getNetworkInterfaces();
+		while(e.hasMoreElements()) {
+			Enumeration ee = ((NetworkInterface)e.nextElement()).getInetAddresses();
+			while(ee.hasMoreElements()) {
+				InetAddress i = (InetAddress)ee.nextElement();
+				if(i.isSiteLocalAddress()) {
+					myAddress = i.getAddress();				}
+			}
+		}
 
 		connect(null);
 	}
@@ -299,8 +313,8 @@ public class Client implements ActionListener, WindowListener {
 			} else {
 				String address = (String)JOptionPane.showInputDialog(
                     null,
+                    message + "\n" + myAddress[0] +"."+ myAddress[1] +"."+ myAddress[2] +".",
                     "",
-                    message,
                     JOptionPane.PLAIN_MESSAGE,
                     null,
                     null,
@@ -311,7 +325,7 @@ public class Client implements ActionListener, WindowListener {
             	if(address.equalsIgnoreCase("local"))
             	    socket = new Socket(InetAddress.getLocalHost(), PORT);
             	else
-            		socket = new Socket(InetAddress.getByName(address), PORT);
+            		socket = new Socket(InetAddress.getByName(myAddress[0] +"."+ myAddress[1] +"."+ myAddress[2] +"."+address), PORT);
 			}
 
 			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -320,9 +334,8 @@ public class Client implements ActionListener, WindowListener {
 			out.println(name);
 
 			label.setText(" Chat as you please: ");
-			label.repaint();
 			textField.setVisible(true);
-			textField.repaint();
+			bottomPanel.repaint();
 
 			chatArea.setText("");
 			chatArea.append("Welcome " + name + "!\n");
@@ -342,7 +355,7 @@ public class Client implements ActionListener, WindowListener {
 				if(in != null) {in.close();}
 				if(socket != null) {socket.close();}
 
-				connect("Enter a valid local ip address:");
+				connect("Enter last octet of server address:");
 			} catch (IOException ex) {
 				ex.printStackTrace();
 			}
