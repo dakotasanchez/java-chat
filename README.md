@@ -8,11 +8,10 @@ Setup
 
 - Have java, javac, and ant installed and in your PATH
 
-Build and clean
+Build
 ============
   
     ant dist
-    ant clean
   
 ### Run
 
